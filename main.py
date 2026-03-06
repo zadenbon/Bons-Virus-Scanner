@@ -6,7 +6,7 @@ import requests
 import time
 import os
 
-API_KEY = "d090b626424dde0d6e1c9686bb99e79ead7383aafbfcada0dbd6425d44cdea7e"
+API_KEY = ""
 
 def scan_url(url):
     print("Submitting URL to VirusTotal...")
@@ -103,3 +103,4 @@ else:
     print("Invalid choice!")
     
     input("\nPress Enter to exit...")
+
