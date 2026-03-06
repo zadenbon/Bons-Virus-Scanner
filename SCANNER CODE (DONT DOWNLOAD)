@@ -1,11 +1,11 @@
-# Bon's Antivirus - Created by Bon
+# Zadenbon's Antivirus - Created by Zadenbon
 # License: CC BY 4.0 - Credit must be given if shared or modified
 
 import requests
 import time
 import os
 
-API_KEY = "508674518b766a94b85949786eabad3496c28b93d8f55cc289384fcee2143dcb"
+API_KEY = "IM NOT SHOWING THE API KEY. IT IS IN THE EXE ALREADY DONT WORRY!"
 
 def scan_url(url):
     print("Submitting URL to VirusTotal...")
@@ -112,5 +112,6 @@ elif choice == "3":
 
 else:
     print("Invalid choice!")
+
 
 input("\nPress Enter to exit...")
