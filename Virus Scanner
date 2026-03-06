@@ -6,7 +6,7 @@ import requests
 import time
 import os
 
-API_KEY = ""
+API_KEY = "508674518b766a94b85949786eabad3496c28b93d8f55cc289384fcee2143dcb" -- this api key is from a burner account, please do not abuse it. thank you
 
 def scan_url(url):
     print("Submitting URL to VirusTotal...")
@@ -103,4 +103,5 @@ else:
     print("Invalid choice!")
     
     input("\nPress Enter to exit...")
+
 
