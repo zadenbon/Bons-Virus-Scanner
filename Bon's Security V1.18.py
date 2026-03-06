@@ -1,5 +1,11 @@
 import customtkinter as ctk
 import tkinter.filedialog as fd
+import requests
+import base64
+import time
+import hashlib
+
+API_KEY = "508674518b766a94b85949786eabad3496c28b93d8f55cc289384fcee2143dcb"
 
 MIDNIGHT = "#0A192F"
 NAVY_BLUE = "#112240"
@@ -12,13 +18,13 @@ class SentinelApp(ctk.CTk):
     def __init__(self):
         super().__init__()
 
-        self.title("SENTINEL v2.0")
+        self.title("BON'S SECURITY V1.18")
         self.geometry("700x600")
         self.configure(fg_color=MIDNIGHT)
 
         self.title_label = ctk.CTkLabel(
             self, 
-            text="SENTINEL SECURITY", 
+            text="BON'S SECURITY V1.18", 
             font=("Impact", 36), 
             text_color=ELECTRIC
         )
@@ -36,7 +42,7 @@ class SentinelApp(ctk.CTk):
             font=("Consolas", 13)
         )
         self.output_box.pack(pady=10)
-        self.output_box.insert("0.0", ">>> SYSTEM READY\n>>> WAITING FOR INPUT...")
+        self.output_box.insert("0.0", ">>> SYSTEM READY\n>>> ENTER URL OR SELECT FILE")
 
         self.url_entry = ctk.CTkEntry(
             self, 
@@ -81,18 +87,56 @@ class SentinelApp(ctk.CTk):
         self.version_label.pack(side="bottom", pady=10)
 
     def run_url_logic(self):
-        url = self.url_entry.get()
-        if url:
-            self.output_box.delete("0.0", "end")
-            self.output_box.insert("end", f"[URL TARGET]: {url}\n")
-            self.output_box.insert("end", "[*] ANALYSING LINK...")
+        url_to_scan = self.url_entry.get()
+        if not url_to_scan: return
+        self.output_box.delete("0.0", "end")
+        self.output_box.insert("end", f">>> TARGET URL: {url_to_scan}\n>>> STATUS: SCANNING... (12s HOLD)\n")
+        self.update()
+        time.sleep(12)
+        try:
+            url_id = base64.urlsafe_b64encode(url_to_scan.encode()).decode().strip("=")
+            api_url = f"https://www.virustotal.com/{url_id}"
+            headers = {"x-apikey": API_KEY}
+            response = requests.get(api_url, headers=headers)
+            if response.status_code == 404:
+                self.output_box.insert("end", "\n[!] NEW URL. SUBMITTING...")
+                requests.post("https://www.virustotal.com", data={"url": url_to_scan}, headers=headers)
+                self.output_box.insert("end", "\n[+] SUBMITTED. RE-SCAN IN 1 MINUTE.")
+                return
+            data = response.json()
+            if response.status_code == 200:
+                stats = data['data']['attributes']['last_analysis_stats']
+                self.output_box.insert("end", f"\n[+] ANALYSIS COMPLETE")
+                self.output_box.insert("end", f"\n[!] MALICIOUS: {stats['malicious']}")
+                self.output_box.insert("end", f"\n[+] HARMLESS: {stats['harmless']}")
+            else:
+                self.output_box.insert("end", f"\n[API ERROR]: {data['error']['message']}")
+        except Exception as e:
+            self.output_box.insert("end", f"\n[SYSTEM ERROR]: {str(e)}")
 
     def run_logic(self):
         file_path = fd.askopenfilename()
-        if file_path:
-            self.output_box.delete("0.0", "end")
-            self.output_box.insert("end", f"[FILE TARGET]: {file_path}\n")
-            self.output_box.insert("end", "[*] UPLOADING HASH...")
+        if not file_path: return
+        self.output_box.delete("0.0", "end")
+        self.output_box.insert("end", f">>> TARGET FILE: {file_path}\n>>> STATUS: SCANNING... (12s HOLD)\n")
+        self.update()
+        time.sleep(12)
+        try:
+            with open(file_path, "rb") as f:
+                file_hash = hashlib.sha256(f.read()).hexdigest()
+            api_url = f"https://www.virustotal.com{file_hash}"
+            headers = {"x-apikey": API_KEY}
+            response = requests.get(api_url, headers=headers)
+            data = response.json()
+            if response.status_code == 200:
+                stats = data['data']['attributes']['last_analysis_stats']
+                self.output_box.insert("end", f"\n[+] ANALYSIS COMPLETE")
+                self.output_box.insert("end", f"\n[!] MALICIOUS: {stats['malicious']}")
+                self.output_box.insert("end", f"\n[+] HARMLESS: {stats['harmless']}")
+            else:
+                self.output_box.insert("end", f"\n[API ERROR]: {data['error']['message']}")
+        except Exception as e:
+            self.output_box.insert("end", f"\n[SYSTEM ERROR]: {str(e)}")
 
 if __name__ == "__main__":
     app = SentinelApp()
