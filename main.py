@@ -101,3 +101,5 @@ elif choice == "3":
 
 else:
     print("Invalid choice!")
+    
+    input("\nPress Enter to exit...")
